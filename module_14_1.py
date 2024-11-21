@@ -47,7 +47,6 @@ def modify_table(db, table: str):
     for i in range(1, 11, 3):
         cmd = f'DELETE FROM {table} WHERE username = ?'
         params = f'User{i}',
-        print(cmd, params)
         cursor.execute(cmd, params)
 
 
