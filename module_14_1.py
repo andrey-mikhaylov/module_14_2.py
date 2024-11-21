@@ -45,21 +45,24 @@ def modify_table(db, table: str):
 
     # Удалите каждую 3ую запись в таблице начиная с 1ой:
     for i in range(1, 11, 3):
-        user = f'User{i}'
-        print(user)
-        ...
-    # User2, example2@gmail.com, 20, 1000
-    # User3, example3@gmail.com, 30, 500
-    # User5, example5@gmail.com, 50, 500
-    # ...
-    # User9, example9@gmail.com, 90, 500
+        cmd = f'DELETE FROM {table} WHERE username = ?'
+        params = f'User{i}',
+        print(cmd, params)
+        cursor.execute(cmd, params)
 
 
 def fetch_records(db: Db, table: str):
     cursor = db.cursor()
-    # Сделайте выборку всех записей при помощи fetchall(), где возраст не равен 60 и выведите их в консоль в следующем формате (без id):
+    # Сделайте выборку всех записей при помощи fetchall(), где возраст не равен 60
+    cursor.execute(f'SELECT * FROM {table} WHERE age != 60')
+    return cursor.fetchall()
+
+
+def print_records(records: list):
+    # и выведите их в консоль в следующем формате (без id):
     # Имя: <username> | Почта: <email> | Возраст: <age> | Баланс: <balance>
-    return []
+    for _, username, email, age, balance in records:
+        print(f'Имя: {username} | Почта: {email} | Возраст: {age} | Баланс: {balance}')
 
 
 def close_db(db: Db):
@@ -73,10 +76,10 @@ def main():
     create_table(db, table)
     fill_table(db, table)
     modify_table(db, table)
-    result = fetch_records(db, table)
+    results = fetch_records(db, table)
+    print_records(results)
     close_db(db)
 
-    print(result)
     """
     Вывод на консоль:
     Имя: User2 | Почта: example2@gmail.com | Возраст: 20 | Баланс: 1000
