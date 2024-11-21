@@ -23,7 +23,6 @@ def create_table(db: Db, table: str):
     ')')
 
     cursor.execute(f'DELETE FROM {table}')
-
     #cursor.execute('CREATE INDEX IF NOT EXISTS idx_email ON Users (email)')
 
 
@@ -32,24 +31,17 @@ def fill_table(db: Db, table: str):
     # Заполните её 10 записями:
     for i in range(1, 11):
         cmd = f'INSERT INTO {table} (username, email, age, balance) VALUES (?, ?, ?, ?)'
-        data = f'User{i}', f'example{i}@gmail.com', str(i*10), '1000'
-        print(cmd, ',', data)
-        cursor.execute(cmd, data)
+        params = f'User{i}', f'example{i}@gmail.com', str(i*10), 1000
+        cursor.execute(cmd, params)
 
 
 def modify_table(db, table: str):
     cursor = db.cursor()
     # Обновите balance у каждой 2ой записи начиная с 1ой на 500:
     for i in range(1, 11, 2):
-        user = f'User{i}'
-        request = ''
-        print(user)
-        ...
-    # User1, example1@gmail.com, 10, 500
-    # User2, example2@gmail.com, 20, 1000
-    # User3, example3@gmail.com, 30, 500
-    # ...
-    # User10, example10@gmail.com, 100, 1000
+        cmd = f'UPDATE {table} SET balance = ? WHERE username = ?'
+        params = 500, f'User{i}'
+        cursor.execute(cmd, params)
 
     # Удалите каждую 3ую запись в таблице начиная с 1ой:
     for i in range(1, 11, 3):
