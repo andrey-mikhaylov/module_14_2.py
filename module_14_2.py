@@ -67,20 +67,25 @@ def print_records(records: list):
 
 #-----------------------------------------------------------------------------------------------------------------------
 # tests
+
+def user(i: int) -> str:
+    return f'User{i}'
+
+
 def fill_table(db: Db, table: str):
     # Заполните её 10 записями:
     for i in range(1, 11):
-        insert_to_db(db, table, (f'User{i}', f'example{i}@gmail.com', str(i * 10), 1000))
+        insert_to_db(db, table, (user(i), f'example{i}@gmail.com', str(i * 10), 1000))
 
 
 def modify_table(db: Db, table: str):
     # Обновите balance у каждой 2ой записи начиная с 1ой на 500:
     for i in range(1, 11, 2):
-        update_db(db, table, 'balance = ?', 'username = ?', (500, f'User{i}'))
+        update_db(db, table, 'balance = ?', 'username = ?', (500, user(i)))
 
     # Удалите каждую 3ую запись в таблице начиная с 1ой:
     for i in range(1, 11, 3):
-        delete_from_db(db, table, 'username = ?', (f'User{i}',))
+        delete_from_db(db, table, 'username = ?', (user(i),))
 
 
 def test_14_1(db: Db, table: str):
