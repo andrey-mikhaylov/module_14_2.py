@@ -40,7 +40,7 @@ def fill_table(db: Db, table: str):
         cursor.execute(cmd, params)
 
 
-def delete_from_db(db, table: str, cond: str, value: tuple):
+def delete_from_db(db, table: str, cond: str = 'TRUE', value: tuple = ()):
     cursor = db.cursor()
     cmd = f'DELETE FROM {table} WHERE {cond}'
     cursor.execute(cmd, value)
@@ -59,17 +59,17 @@ def modify_table(db, table: str):
         delete_from_db(db, table, 'username = ?', (f'User{i}',))
 
 
-def fetch_records(db: Db, table: str):
+def fetch_records(db: Db, table: str, cond: str = 'TRUE', value: tuple = ()):
     cursor = db.cursor()
     # Сделайте выборку всех записей при помощи fetchall(), где возраст не равен 60
-    cursor.execute(f'SELECT * FROM {table} WHERE age != 60')
+    cursor.execute(f'SELECT * FROM {table} WHERE {cond}', value)
     return cursor.fetchall()
 
 
-def fetch_all(db: Db, table: str):
+def avg_db(db: Db, table: str, param: str):
     cursor = db.cursor()
-    cursor.execute(f'SELECT * FROM {table}')
-    return cursor.fetchall()
+    cursor.execute(f'SELECT AVG({param}) FROM {table}')
+    return cursor.fetchone()[0]
 
 
 def print_records(records: list):
@@ -79,26 +79,18 @@ def print_records(records: list):
         print(f'Имя: {username} | Почта: {email} | Возраст: {age} | Баланс: {balance}')
 
 
-def delete_id(db: Db, table: str, id: int):
-    ...
-
-
-def print_avg(db: Db, table: str):
-    ...
-
-
 def main():
     db = create_db('not_telegram.db')
     table = 'Users'
     create_table(db, table)
     fill_table(db, table)
     modify_table(db, table)
+#    results = fetch_records(db, table, 'age != ?', ('60',))
 #    results = fetch_records(db, table)
-#    results = fetch_all(db, table)
 #    print_records(results)
     delete_from_db(db, table, 'id = ?', ('6',))
-    print_records(fetch_all(db, table))
-#    print_avg(db, table)
+#    print_records(fetch_all(db, table))
+    print(avg_db(db, table, 'balance'))
 
     close_db(db)
 
