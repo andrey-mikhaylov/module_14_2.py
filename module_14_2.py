@@ -5,8 +5,6 @@ from sqlite3 import Connection as Db
 #-----------------------------------------------------------------------------------------------------------------------
 # database
 def create_db(database_name: str):
-    # Создайте файл базы данных not_telegram.db
-    # и подключитесь к ней, используя встроенную библиотеку sqlite3.
     db = sqlite3.connect(database_name)
     return db
 
@@ -17,11 +15,8 @@ def close_db(db: Db):
 
 
 def create_table(db: Db, table: str):
-    # Создайте объект курсора
     cursor = db.cursor()
-    # Создайте таблицу Users, если она ещё не создана.
     cursor.execute(f'CREATE TABLE IF NOT EXISTS {table} ('
-        # В этой таблице должны присутствовать следующие поля:
         'id INTEGER PRIMARY KEY,'   # целое число, первичный ключ
         'username TEXT NOT NULL,'   # текст (не пустой)
         'email TEXT NOT NULL,'      # текст (не пустой)
@@ -33,10 +28,16 @@ def create_table(db: Db, table: str):
     #cursor.execute('CREATE INDEX IF NOT EXISTS idx_email ON Users (email)')
 
 
-def delete_from_db(db: Db, table: str, cond: str = 'TRUE', value: tuple = ()):
+def insert_to_db(db: Db, table: str, params: tuple):
+    cursor = db.cursor()
+    cmd = f'INSERT INTO {table} (username, email, age, balance) VALUES (?, ?, ?, ?)'
+    cursor.execute(cmd, params)
+
+
+def delete_from_db(db: Db, table: str, cond: str = 'TRUE', params: tuple = ()):
     cursor = db.cursor()
     cmd = f'DELETE FROM {table} WHERE {cond}'
-    cursor.execute(cmd, value)
+    cursor.execute(cmd, params)
 
 
 def update_db(db: Db, table: str, op: str, cond: str, params: tuple):
@@ -45,15 +46,15 @@ def update_db(db: Db, table: str, op: str, cond: str, params: tuple):
     cursor.execute(cmd, params)
 
 
-def fetch_records(db: Db, table: str, cond: str = 'TRUE', value: tuple = ()):
+def fetch_records(db: Db, table: str, cond: str = 'TRUE', params: tuple = ()):
     cursor = db.cursor()
-    cursor.execute(f'SELECT * FROM {table} WHERE {cond}', value)
+    cursor.execute(f'SELECT * FROM {table} WHERE {cond}', params)
     return cursor.fetchall()
 
 
-def op_db(db: Db, table: str, op: str, cond: str = 'TRUE', value: tuple = ()):
+def op_db(db: Db, table: str, op: str, cond: str = 'TRUE', params: tuple = ()):
     cursor = db.cursor()
-    cursor.execute(f'SELECT {op} FROM {table} WHERE {cond}', value)
+    cursor.execute(f'SELECT {op} FROM {table} WHERE {cond}', params)
     return cursor.fetchone()[0]
 
 
@@ -67,12 +68,9 @@ def print_records(records: list):
 #-----------------------------------------------------------------------------------------------------------------------
 # tests
 def fill_table(db: Db, table: str):
-    cursor = db.cursor()
     # Заполните её 10 записями:
     for i in range(1, 11):
-        cmd = f'INSERT INTO {table} (username, email, age, balance) VALUES (?, ?, ?, ?)'
-        params = f'User{i}', f'example{i}@gmail.com', str(i*10), 1000
-        cursor.execute(cmd, params)
+        insert_to_db(db, table, (f'User{i}', f'example{i}@gmail.com', str(i * 10), 1000))
 
 
 def modify_table(db: Db, table: str):
@@ -85,14 +83,14 @@ def modify_table(db: Db, table: str):
         delete_from_db(db, table, 'username = ?', (f'User{i}',))
 
 
-def test1(db: Db, table: str):
+def test_14_1(db: Db, table: str):
     # Сделайте выборку всех записей при помощи fetchall(), где возраст не равен 60
     results = fetch_records(db, table, 'age != ?', ('60',))
 #    results = fetch_records(db, table)
     print_records(results)
 
 
-def test2(db: Db, table: str):
+def test_14_2(db: Db, table: str):
     # Удалите из базы данных not_telegram.db запись с id = 6.
     delete_from_db(db, table, 'id = ?', ('6',))
     # Подсчитать общее количество записей.
@@ -112,13 +110,18 @@ def test2(db: Db, table: str):
 
 
 def main():
-    db = create_db('not_telegram.db')
+    db = create_db('not_telegram.db')       # Создайте файл базы данных not_telegram.db
+
     table = 'Users'
-    create_table(db, table)
+    create_table(db, table)                 # Создайте таблицу Users
+
     fill_table(db, table)
     modify_table(db, table)
-#    test1(db, table)
-    test2(db, table)
+
+#    test_14_1(db, table)
+
+    test_14_2(db, table)
+
     close_db(db)
 
 
