@@ -9,6 +9,11 @@ def create_db(database_name: str):
     return db
 
 
+def close_db(db: Db):
+    db.commit()
+    db.close()
+
+
 def create_table(db: Db, table: str):
     # Создайте объект курсора
     cursor = db.cursor()
@@ -35,6 +40,12 @@ def fill_table(db: Db, table: str):
         cursor.execute(cmd, params)
 
 
+def delete_from_db(db, table: str, cond: str, value: tuple):
+    cursor = db.cursor()
+    cmd = f'DELETE FROM {table} WHERE {cond}'
+    cursor.execute(cmd, value)
+
+
 def modify_table(db, table: str):
     cursor = db.cursor()
     # Обновите balance у каждой 2ой записи начиная с 1ой на 500:
@@ -45,15 +56,19 @@ def modify_table(db, table: str):
 
     # Удалите каждую 3ую запись в таблице начиная с 1ой:
     for i in range(1, 11, 3):
-        cmd = f'DELETE FROM {table} WHERE username = ?'
-        params = f'User{i}',
-        cursor.execute(cmd, params)
+        delete_from_db(db, table, 'username = ?', (f'User{i}',))
 
 
 def fetch_records(db: Db, table: str):
     cursor = db.cursor()
     # Сделайте выборку всех записей при помощи fetchall(), где возраст не равен 60
     cursor.execute(f'SELECT * FROM {table} WHERE age != 60')
+    return cursor.fetchall()
+
+
+def fetch_all(db: Db, table: str):
+    cursor = db.cursor()
+    cursor.execute(f'SELECT * FROM {table}')
     return cursor.fetchall()
 
 
@@ -64,9 +79,12 @@ def print_records(records: list):
         print(f'Имя: {username} | Почта: {email} | Возраст: {age} | Баланс: {balance}')
 
 
-def close_db(db: Db):
-    db.commit()
-    db.close()
+def delete_id(db: Db, table: str, id: int):
+    ...
+
+
+def print_avg(db: Db, table: str):
+    ...
 
 
 def main():
@@ -75,17 +93,18 @@ def main():
     create_table(db, table)
     fill_table(db, table)
     modify_table(db, table)
-    results = fetch_records(db, table)
-    print_records(results)
+#    results = fetch_records(db, table)
+#    results = fetch_all(db, table)
+#    print_records(results)
+    delete_from_db(db, table, 'id = ?', ('6',))
+    print_records(fetch_all(db, table))
+#    print_avg(db, table)
+
     close_db(db)
 
     """
     Вывод на консоль:
-    Имя: User2 | Почта: example2@gmail.com | Возраст: 20 | Баланс: 1000
-    Имя: User3 | Почта: example3@gmail.com | Возраст: 30 | Баланс: 500
-    Имя: User5 | Почта: example5@gmail.com | Возраст: 50 | Баланс: 500
-    Имя: User8 | Почта: example8@gmail.com | Возраст: 80 | Баланс: 1000
-    Имя: User9 | Почта: example9@gmail.com | Возраст: 90 | Баланс: 500
+    700.0
     """
 
 
